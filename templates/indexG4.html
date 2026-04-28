@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript">
+    google.charts.load("current", { packages: ["corechart"] });
+    google.charts.setOnLoadCallback(drawCharts);
+
+    function drawCharts() {
+      function getGraphData(quarter) {
+        $.ajax({
+          url: "/graph_data4",
+          data: { quarter: quarter },
+          dataType: "json",
+          success: function(jsonData) {
+          var data = new google.visualization.DataTable(jsonData);
+
+          var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+          chart.draw(data, {width: 500, height: 340, colors: ['#39FF14']});
+
+          var chart1 = new google.visualization.BarChart(document.getElementById("barchart_values"));
+          chart1.draw(data, {width: 500, height: 340, colors: ['#27571B']});
+
+          var chart2 = new google.visualization.AreaChart(document.getElementById("columnchart_values"));
+          chart2.draw(data, {width: 500, height: 340, colors: ['#48B43F']});
+        },
+        error: function(xhr, status, error) {
+          console.error(error);
+        }
+      });
+    }
+      getGraphData('');  // Load the initial data
+
+$(document).ready(function() {
+  $('#home').click(function() {
+    var number = '{{ number }}';
+
+    if (number === '2') {
+      window.location.href = "/menuUser";
+    } else if (number === '1') {
+      window.location.href = "/menuAdmin";
+    } else {
+      console.log("Invalid role!");
+    }
+  });
+
+
+      $('#quarter1').click(function() {
+        getGraphData('q1');
+      });
+
+      $('#quarter2').click(function() {
+        getGraphData('q2');
+      });
+      $('#quarter3').click(function() {
+        getGraphData('q3');
+      });
+
+      $('#quarter4').click(function() {
+        getGraphData('q4');
+      });
+      $('#full').click(function() {
+        getGraphData('full');
+      });
+      $('#logout').click(function() {
+        window.location.href = "/";
+
+      });
+        var results = {{ results | tojson }};
+        $('.graph-menu button').each(function(index) {
+            var buttonId = 'button' + index;
+            $(this).attr('id', buttonId);
+
+            $('#' + buttonId).click(function() {
+                var targetUrl = "/graph" + results[index][0];
+                window.location.href = targetUrl;
+            });
+        });
+});
+    }
+  </script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styling.css') }}">
+</head>
+<body>
+
+
+  <ul class="graph-menu">
+    {% for result in results %}
+      <li><button id="button{{ loop.index }}">{{ result[1] }}</button></li>
+    {% endfor %}
+    <li style="margin-right: auto;"><button id="home">Home Page</button></li>
+    <li><button id="logout">Logout</button></li>
+  </ul>
+
+<div class="container">
+  <h1 class="chart-title">Grade Levels</h1>
+  <div class="charts-container">
+    <div id="chart_div" class="chart"></div>
+    <div id="barchart_values" class="chart"></div>
+    <div id="columnchart_values" class="chart"></div>
+  </div>
+
+    <ul class="graph-menuQ">
+      <li><button id="quarter1">Quarter 1</button></li>
+      <li><button id="quarter2">Quarter 2</button></li>
+      <li><button id="quarter3">Quarter 3</button></li>
+      <li><button id="quarter4">Quarter 4</button></li>
+      <li><button id="full">Full Data</button></li>
+    </ul>
+</div>
+</body>
+</html>
